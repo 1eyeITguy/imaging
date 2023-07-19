@@ -1,0 +1,17 @@
+{
+    "Assign": {
+                "IsPresent": true
+              },
+    "AddToGroup": "Autopilot Devices - ALL",
+    "AddToGroupOptions": [
+                              "Autopilot Devices - ALL"
+                         ],
+    "AssignedComputerName": "",                     
+    "AssignedComputerNameExample": "BRWIN-AAD-XXXX",
+    "AssignedUser": "",
+    "AssignedUserExample": "first.last@sight-sound.com",
+    "GroupTag": "OSDCloud",
+    "PostAction": "Quit",
+    "Run": "WindowsSettings",
+    "Title": "Sight & Sound Autopilot Registration"
+}
