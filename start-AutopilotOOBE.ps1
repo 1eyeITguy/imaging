@@ -17,8 +17,8 @@ $Global:oobeCloud = @{
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
     oobeUpdateDrivers = $true
     oobeUpdateWindows = $true
-    oobeRestartComputer = $false
-    oobeStopComputer = $false
+    oobeSetUserRegSettings = $true
+    oobeSetDeviceRegSettings = $true
 }
 
 
@@ -193,30 +193,10 @@ function Step-oobeUpdateWindows {
         }
     }
 }
-function Step-oobeRestartComputer {
-    [CmdletBinding()]
-    param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeRestartComputer -eq $true)) {
-        Write-Host -ForegroundColor Cyan 'Build Complete!'
-        Write-Warning 'Device will restart in 30 seconds.  Press Ctrl + C to cancel'
-        Stop-Transcript
-        Start-Sleep -Seconds 30
-        Restart-Computer
-    }
-}
-function Step-oobeStopComputer {
-    [CmdletBinding()]
-    param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeStopComputer -eq $true)) {
-        Write-Host -ForegroundColor Cyan 'Build Complete!'
-        Write-Warning 'Device will shutdown in 30 seconds. Press Ctrl + C to cancel'
-        Stop-Transcript
-        Start-Sleep -Seconds 30
-        Stop-Computer
-    }
-}
-
 function Show-RestartConfirmation {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateWindowsr -eq $true)) {    
     Add-Type -AssemblyName System.Windows.Forms
     $caption = "Restart Computer"
     $message = "Were Windows Updates ran that would require a restart?  If so please restart now, and then start this script over"
@@ -228,8 +208,12 @@ function Show-RestartConfirmation {
     } else {
         Write-Host "Continuing script execution..."
     }
+  }
 }
-function Step-SetUserRegSettings {
+function Step-oobeSetUserRegSettings {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetUserRegSettings -eq $true)) {
     # Load Default User Profile hive (ntuser.dat)
     Write-host "Setting default users settings ..."
     $DefaultUserProfilePath = "$env:SystemDrive\Users\Default\NTUSER.DAT"
@@ -243,13 +227,13 @@ function Step-SetUserRegSettings {
     Write-host -ForegroundColor Yellow "Change default Explorer view to This PC"
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f
 
-    Write-host -ForegroundColor Yellow "Show This PC shortcut on desktop"
-    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
-    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
-
     Write-host -ForegroundColor Yellow "Show User Folder shortcut on desktop"
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
+
+    Write-host -ForegroundColor Yellow "Show This PC shortcut on desktop"
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
 
     Write-host -ForegroundColor Yellow "Show item checkboxes"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "AutoCheckSelect" /t REG_DWORD /d 1 /f
@@ -259,7 +243,51 @@ function Step-SetUserRegSettings {
 
     # Unload Default User Profile hive
     REG UNLOAD "HKU\Default"
+    }
 }
+function Step-oobeSetDeviceRegSettings {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDeviceRegSettings -eq $true)) {
+
+    Write-host -ForegroundColor Yellow "Set Silent Account Configuration"
+
+        $HKLMregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive'##Path to HKLM keys
+        $DiskSizeregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive\DiskSpaceCheckThresholdMB'##Path to max disk size key
+        $TenantGUID = '8a3a7e59-4ea9-4259-ba0d-77cc328ca84f'
+
+        if(!(Test-Path $HKLMregistryPath)){New-Item -Path $HKLMregistryPath -Force}
+        if(!(Test-Path $DiskSizeregistryPath)){New-Item -Path $DiskSizeregistryPath -Force}
+
+        New-ItemProperty -Path $HKLMregistryPath -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null ##Enable silent account configuration
+        New-ItemProperty -Path $DiskSizeregistryPath -Name $TenantGUID -Value '102400' -PropertyType DWORD -Force | Out-Null ##Set max OneDrive threshold before prompting
+
+    Write-host -ForegroundColor Yellow "disable firstlogon animation"
+
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableFirstLogonAnimation" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "EnableFirstLogonAnimation" -Value 0 -Type DWord
+
+    Write-host -ForegroundColor Yellow "Autoset time zone"
+
+        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
+        Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
+    }
+}function Step-oobeUpdateDefender {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
+
+        Write-host -ForegroundColor Yellow "Updating Defender Signatures" 
+        try {
+            Update-MpSignature
+            exit 0
+        }
+        catch {
+            exit 0 <#Do this if a terminating exception happens#>
+        }
+    }
+}
+
 
 #endregion
 
@@ -272,9 +300,9 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
-Step-SetUserRegSettings
 Show-RestartConfirmation
+Step-oobeSetUserRegSettings
+Step-oobeSetDeviceRegSettings
+Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
-Step-oobeRestartComputer
-Step-oobeStopComputer
 #=================================================
