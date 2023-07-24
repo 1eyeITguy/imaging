@@ -100,6 +100,10 @@ function Step-oobeInstallModuleAutopilotOOBE {
             Import-Module AutopilotOOBE -Force
             Start-AutopilotOOBE
         }
+        else {
+            Import-Module AutopilotOOBE -Force
+            Start-AutopilotOOBE
+        }
     }
 }
 function Step-oobeRegisterAutopilot {
