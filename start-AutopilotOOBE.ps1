@@ -215,6 +215,20 @@ function Step-oobeStopComputer {
         Stop-Computer
     }
 }
+
+function Show-RestartConfirmation {
+    Add-Type -AssemblyName System.Windows.Forms
+    $caption = "Restart Computer"
+    $message = "Were Windows Updates ran that would require a restart?  If so please restart now, and then start this script over"
+    $options = [System.Windows.Forms.MessageBoxButtons]::YesNo
+    $result = [System.Windows.Forms.MessageBox]::Show($message, $caption, $options, [System.Windows.Forms.MessageBoxIcon]::Question)
+
+    if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
+        Restart-Computer -Force
+    } else {
+        Write-Host "Continuing script execution..."
+    }
+}
 #endregion
 
 # Execute functions
@@ -226,6 +240,7 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
+Show-RestartConfirmation
 Step-oobeRegisterAutopilot
 Step-oobeRestartComputer
 Step-oobeStopComputer
