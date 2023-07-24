@@ -229,6 +229,38 @@ function Show-RestartConfirmation {
         Write-Host "Continuing script execution..."
     }
 }
+function STEP-SetUserRegSettings {
+    # Load Default User Profile hive (ntuser.dat)
+    Write-host "Setting default users settings ..."
+    $DefaultUserProfilePath = "$env:SystemDrive\Users\Default\NTUSER.DAT"
+    REG LOAD "HKU\Default" $DefaultUserProfilePath
+
+    # Changes to Default User Registry
+
+    Write-host -ForegroundColor Yellow "Show known file extensions" 
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
+
+    Write-host -ForegroundColor Yellow "Change default Explorer view to This PC"
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f
+
+    Write-host -ForegroundColor Yellow "Show This PC shortcut on desktop"
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
+
+    Write-host -ForegroundColor Yellow "Show User Folder shortcut on desktop"
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
+    REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
+
+    Write-host -ForegroundColor Yellow "Show item checkboxes"
+    REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "AutoCheckSelect" /t REG_DWORD /d 1 /f
+
+    Write-host -ForegroundColor Yellow "Disable Chat on Taskbar"
+    REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
+
+    # Unload Default User Profile hive
+    REG UNLOAD "HKU\Default"
+}
+
 #endregion
 
 # Execute functions
@@ -240,6 +272,7 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
+STEP-SetUserRegSettings
 Show-RestartConfirmation
 Step-oobeRegisterAutopilot
 Step-oobeRestartComputer
