@@ -229,7 +229,7 @@ function Show-RestartConfirmation {
         Write-Host "Continuing script execution..."
     }
 }
-function STEP-SetUserRegSettings {
+function Step-SetUserRegSettings {
     # Load Default User Profile hive (ntuser.dat)
     Write-host "Setting default users settings ..."
     $DefaultUserProfilePath = "$env:SystemDrive\Users\Default\NTUSER.DAT"
@@ -272,7 +272,7 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
-STEP-SetUserRegSettings
+Step-SetUserRegSettings
 Show-RestartConfirmation
 Step-oobeRegisterAutopilot
 Step-oobeRestartComputer
