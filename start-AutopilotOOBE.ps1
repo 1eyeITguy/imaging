@@ -39,7 +39,7 @@ function Step-oobeSetDateTime {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDateTime -eq $true)) {
         Write-Host -ForegroundColor Yellow 'Verify the Date and Time is set properly including the Time Zone'
-        Write-Host -ForegroundColor Yellow 'If this is not configured properly, Certificates and Domain Join may fail'
+        Write-Host -ForegroundColor Yellow 'If this is not configured properly, Certificates and Autopilot may fail'
         Start-Process 'ms-settings:dateandtime' | Out-Null
         $ProcessId = (Get-Process -Name 'SystemSettings').Id
         if ($ProcessId) {
@@ -189,31 +189,6 @@ function Step-oobeUpdateWindows {
         }
     }
 }
-function Invoke-Webhook {
-    $BiosSerialNumber = Get-MyBiosSerialNumber
-    $ComputerManufacturer = Get-MyComputerManufacturer
-    $ComputerModel = Get-MyComputerModel
-    
-    $URI = 'https://XXXX.webhook.office.com/webhookb2/YYYY'
-    $JSON = @{
-        "@type"    = "MessageCard"
-        "@context" = "<http://schema.org/extensions>"
-        "title"    = 'OSDCloud Information'
-        "text"     = "The following client has been successfully deployed:<br>
-                    BIOS Serial Number: **$($BiosSerialNumber)**<br>
-                    Computer Manufacturer: **$($ComputerManufacturer)**<br>
-                    Computer Model: **$($ComputerModel)**"
-        } | ConvertTo-JSON
-        
-        $Params = @{
-        "URI"         = $URI
-        "Method"      = 'POST'
-        "Body"        = $JSON
-        "ContentType" = 'application/json'
-        }
-        Invoke-RestMethod @Params | Out-Null
-}
-
 function Step-oobeRestartComputer {
     [CmdletBinding()]
     param ()
@@ -247,7 +222,6 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
-Invoke-Webhook
 Step-oobeRegisterAutopilot
 Step-oobeRestartComputer
 Step-oobeStopComputer
