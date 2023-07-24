@@ -196,7 +196,7 @@ function Step-oobeUpdateWindows {
 function Show-RestartConfirmation {
     [CmdletBinding()]
     param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateWindowsr -eq $true)) {    
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateWindows -eq $true)) {    
     Add-Type -AssemblyName System.Windows.Forms
     $caption = "Restart Computer"
     $message = "Were Windows Updates ran that would require a restart?  If so please restart now, and then start this script over"
