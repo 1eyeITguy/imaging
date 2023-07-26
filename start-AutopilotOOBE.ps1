@@ -286,27 +286,29 @@ function Step-oobeCleanUp {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeCleanUp -eq $true)) {
-
     Write-host -ForegroundColor Yellow "Cleaning up ..."
-
     $exceptionModule = "Microsoft.Graph.Authentication"
     $modulesToUninstall = Get-InstalledModule | Where-Object { $_.Name -ne $exceptionModule }
-
     foreach ($module in $modulesToUninstall) {
         $moduleName = $module.Name
-        Write-Host "Uninstalling module: $($moduleName)" -ForegroundColor Gray
+        Write-Host "Uninstalling module: $($moduleName)" -ForegroundColor DarkGray
+        if (Get-Module -Name $moduleName -ListAvailable) {
+            Remove-Module -Name $moduleName -Force
+        }
         Uninstall-Module -Name $moduleName -Force
     }
-
-    Write-Host "Uninstalling module: $exceptionModule" -ForegroundColor Gray
+    Write-Host "Uninstalling module: $exceptionModule" -ForegroundColor DarkGray
+    if (Get-Module -Name $exceptionModule -ListAvailable) {
+        Remove-Module -Name $exceptionModule -Force
+    }
     Uninstall-Module -Name $exceptionModule -Force
-
+}
     if ((Get-ExecutionPolicy) -ne 'Restricted') {
         Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
         Set-ExecutionPolicy Restricted -Force
     }
 }
-    }
+    
 
 #endregion
 
