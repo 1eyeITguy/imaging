@@ -19,7 +19,8 @@ $Global:oobeCloud = @{
     oobeUpdateWindows = $true
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
-    oobeCleanUp = $true
+    oobeCleanUp = $false
+    oobeExecutionPolicyRestricted = $true
 }
 
 
@@ -199,8 +200,8 @@ function Show-RestartConfirmation {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateWindows -eq $true)) {    
     Add-Type -AssemblyName System.Windows.Forms
-    $caption = "Restart Computer"
-    $message = "Were Windows Updates ran that would require a restart?  If so please restart now, and then start this script over"
+    $caption = "Restart Computer?"
+    $message = "Were Windows Updates ran that would require a restart?  If so please click YES to restart now and then start this script over.  Otherwise, please click NO to continue"
     $options = [System.Windows.Forms.MessageBoxButtons]::YesNo
     $result = [System.Windows.Forms.MessageBox]::Show($message, $caption, $options, [System.Windows.Forms.MessageBoxIcon]::Question)
 
@@ -302,10 +303,17 @@ function Step-oobeCleanUp {
         Remove-Module -Name $exceptionModule -Force
     }
     Uninstall-Module -Name $exceptionModule -Force
+}    
 }
-    if ((Get-ExecutionPolicy) -ne 'Restricted') {
-        Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
-        Set-ExecutionPolicy Restricted -Force
+
+function Step-oobeExecutionPolicyRestricted {
+    [CmdletBinding()]
+    param ()
+    if ($env:UserName -eq 'defaultuser0') {
+        if ((Get-ExecutionPolicy) -ne 'Restricted') {
+            Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
+            Set-ExecutionPolicy RemoteSigned -Force
+        }
     }
 }
     
@@ -327,4 +335,5 @@ Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
 Step-oobeCleanUp
+Step-oobeExecutionPolicyRestricted
 #=================================================
