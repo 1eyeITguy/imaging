@@ -222,24 +222,24 @@ function Step-oobeSetUserRegSettings {
 
     # Changes to Default User Registry
 
-    Write-host -ForegroundColor Yellow "Show known file extensions" 
+    Write-host -ForegroundColor DarkCyan "Show known file extensions" 
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
 
-    Write-host -ForegroundColor Yellow "Change default Explorer view to This PC"
+    Write-host -ForegroundColor DarkCyan "Change default Explorer view to This PC"
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f
 
-    Write-host -ForegroundColor Yellow "Show User Folder shortcut on desktop"
+    Write-host -ForegroundColor DarkCyan "Show User Folder shortcut on desktop"
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" /t REG_DWORD /d 0 /f
 
-    Write-host -ForegroundColor Yellow "Show This PC shortcut on desktop"
+    Write-host -ForegroundColor DarkCyan "Show This PC shortcut on desktop"
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
     REG ADD "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f
 
-    Write-host -ForegroundColor Yellow "Show item checkboxes"
+    Write-host -ForegroundColor DarkCyan "Show item checkboxes"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "AutoCheckSelect" /t REG_DWORD /d 1 /f
 
-    Write-host -ForegroundColor Yellow "Disable Chat on Taskbar"
+    Write-host -ForegroundColor DarkCyan "Disable Chat on Taskbar"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
 
     # Unload Default User Profile hive
@@ -251,18 +251,18 @@ function Step-oobeSetDeviceRegSettings {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDeviceRegSettings -eq $true)) {
 
-    Write-host -ForegroundColor Yellow "Set Silent Account Configuration"
+    Write-host -ForegroundColor DarkCyan "Set Silent Account Configuration"
 
         $HKLMregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive'##Path to HKLM keys
         if(!(Test-Path $HKLMregistryPath)){New-Item -Path $HKLMregistryPath -Force}
         New-ItemProperty -Path $HKLMregistryPath -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null ##Enable silent account configuration
 
-    Write-host -ForegroundColor Yellow "disable firstlogon animation"
+    Write-host -ForegroundColor DarkCyan "disable firstlogon animation"
 
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableFirstLogonAnimation" -Value 0 -Type DWord
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "EnableFirstLogonAnimation" -Value 0 -Type DWord
 
-    Write-host -ForegroundColor Yellow "Autoset time zone"
+    Write-host -ForegroundColor DarkCyan "Autoset time zone"
 
         Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
         Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
@@ -272,7 +272,7 @@ function Step-oobeSetDeviceRegSettings {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
 
-        Write-host -ForegroundColor Yellow "Updating Defender Signatures" 
+        Write-host -ForegroundColor DarkCyan "Updating Defender Signatures" 
         try {
             Update-MpSignature
             exit 0
