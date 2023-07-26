@@ -15,8 +15,8 @@ $Global:oobeCloud = @{
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $false
-    oobeUpdateWindows = $false
+    oobeUpdateDrivers = $true
+    oobeUpdateWindows = $true
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeCleanUp = $false
@@ -313,7 +313,7 @@ function Step-oobeExecutionPolicyRestricted {
     if ($env:UserName -eq 'defaultuser0') {
         if ((Get-ExecutionPolicy) -ne 'Restricted') {
             Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
-            Set-ExecutionPolicy RemoteSigned -Force
+            Set-ExecutionPolicy Restricted -Force
         }
     }
 }
