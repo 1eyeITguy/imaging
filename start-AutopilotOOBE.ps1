@@ -15,12 +15,13 @@ $Global:oobeCloud = @{
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $true
-    oobeUpdateWindows = $true
+    oobeUpdateDrivers = $false
+    oobeUpdateWindows = $false
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeCleanUp = $false
     oobeExecutionPolicyRestricted = $true
+    oobeRestartComputer = $true
 }
 
 
@@ -316,6 +317,17 @@ function Step-oobeExecutionPolicyRestricted {
         }
     }
 }
+function Step-oobeRestartComputer {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeRestartComputer -eq $true)) {
+        Write-Host -ForegroundColor Cyan 'Build Complete!'
+        Write-Warning 'Device will restart in 30 seconds.  Press Ctrl + C to cancel'
+        Stop-Transcript
+        Start-Sleep -Seconds 30
+        Restart-Computer
+    }
+}
     
 
 #endregion
@@ -336,4 +348,5 @@ Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
 Step-oobeCleanUp
 Step-oobeExecutionPolicyRestricted
+Step-oobeRestartComputer
 #=================================================
