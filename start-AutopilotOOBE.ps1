@@ -19,6 +19,7 @@ $Global:oobeCloud = @{
     oobeUpdateWindows = $true
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
+    oobeCleanUp = $true
 }
 
 
@@ -281,7 +282,31 @@ function Step-oobeSetDeviceRegSettings {
         }
     }
 }
+function Step-oobeCleanUp {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeCleanUp -eq $true)) {
 
+    Write-host -ForegroundColor Yellow "Cleaning up ..."
+
+    $exceptionModule = "Microsoft.Graph.Authentication"
+    $modulesToUninstall = Get-InstalledModule | Where-Object { $_.Name -ne $exceptionModule }
+
+    foreach ($module in $modulesToUninstall) {
+        $moduleName = $module.Name
+        Write-Host "Uninstalling module: $($moduleName)" -ForegroundColor Gray
+        Uninstall-Module -Name $moduleName -Force
+    }
+
+    Write-Host "Uninstalling module: $exceptionModule" -ForegroundColor Gray
+    Uninstall-Module -Name $exceptionModule -Force
+
+    if ((Get-ExecutionPolicy) -ne 'Restricted') {
+        Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
+        Set-ExecutionPolicy Restricted -Force
+    }
+}
+    }
 
 #endregion
 
@@ -299,4 +324,5 @@ Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
+Step-oobeCleanUp
 #=================================================
