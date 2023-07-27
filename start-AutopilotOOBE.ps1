@@ -10,15 +10,16 @@ $null = Start-Transcript -Path (Join-Path "$env:SystemRoot\Temp" $Transcript) -E
 #   oobeCloud Settings
 #=================================================
 $Global:oobeCloud = @{
-    oobeSetDisplay = $true
+    oobeSetDisplay = $false
     oobeSetDateTime = $true
-    oobeRegisterAutopilot = $true
+    oobeRegisterAutopilot = $false
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $true
-    oobeUpdateWindows = $true
+    oobeUpdateDrivers = $false
+    oobeUpdateWindows = $talse
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
+    oobeSetDesktopTheme = $true
     oobeCleanUp = $false
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
@@ -269,8 +270,7 @@ function Step-oobeSetDeviceRegSettings {
         Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
         Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
     }
-}
-function Step-oobeUpdateDefender {
+}function Step-oobeUpdateDefender {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
@@ -285,6 +285,64 @@ function Step-oobeUpdateDefender {
         }
     }
 }
+function Step-oobeSetDesktopTheme {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDesktopTheme -eq $true)) {
+        
+# Set the URL and local file path for the theme
+$themeURL = "https://github.com/1eyeITguy/imaging/raw/main/S%26S_Theme.2017.deskthemepack"
+$localThemeFilePath = "C:\Windows\SightSound\SS_Theme.2017.deskthemepack"
+
+# Check if the SightSound directory exists, and create it if it doesn't
+$directoryPath = "C:\Windows\SightSound"
+if (!(Test-Path -Path $directoryPath -PathType Container)) {
+    New-Item -Path $directoryPath -ItemType Directory -Force | Out-Null
+}
+
+# Download the theme file
+Invoke-WebRequest -Uri $themeURL -OutFile $localThemeFilePath
+
+# Create the "set-desktoptheme.ps1" script content
+$scriptContent = @"
+`$flagFilePath = Join-Path $env:APPDATA "set-desktoptheme-flag.txt"
+
+if (Test-Path `$flagFilePath) {
+    # Flag file exists, script has already run for this user, so exit.
+    Write-Host "Script already executed for this user."
+    return
+}
+
+# Your main script logic goes here...
+`$themeFilePath = "$localThemeFilePath"
+& `$themeFilePath
+Start-Sleep -Seconds 2
+
+`$settingsProcess = Get-Process -Name SystemSettings
+if (`$settingsProcess) {
+    Stop-Process -Name SystemSettings
+}
+
+# Create the flag file to indicate the script has been executed for this user.
+New-Item -ItemType File -Path `$flagFilePath -Force | Out-Null
+
+Write-Host "Script executed successfully for this user."
+"@
+
+# Set the path for the "set-desktoptheme.ps1" script
+$scriptPath = Join-Path -Path $directoryPath -ChildPath "set-desktoptheme.ps1"
+
+# Create the "set-desktoptheme.ps1" script file
+Set-Content -Path $scriptPath -Value $scriptContent -Encoding ASCII
+
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File "C:\Windows\SightSound\set-desktoptheme.ps1"'
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd 
+Register-ScheduledTask -TaskName "RunScriptOnUserLogon" -Trigger $trigger -Action $action -Settings $settings
+    }
+}
+
+
 function Step-oobeCleanUp {
     [CmdletBinding()]
     param ()
@@ -307,6 +365,7 @@ function Step-oobeCleanUp {
     Uninstall-Module -Name $exceptionModule -Force
 }    
 }
+
 function Step-oobeExecutionPolicyRestricted {
     [CmdletBinding()]
     param ()
@@ -327,7 +386,8 @@ function Step-oobeRestartComputer {
         Start-Sleep -Seconds 30
         Restart-Computer
     }
-} 
+}
+    
 
 #endregion
 
@@ -345,6 +405,7 @@ Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
+Step-oobeSetDesktopTheme
 Step-oobeCleanUp
 Step-oobeExecutionPolicyRestricted
 Step-oobeRestartComputer
