@@ -269,7 +269,8 @@ function Step-oobeSetDeviceRegSettings {
         Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
         Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
     }
-}function Step-oobeUpdateDefender {
+}
+function Step-oobeUpdateDefender {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
@@ -306,7 +307,6 @@ function Step-oobeCleanUp {
     Uninstall-Module -Name $exceptionModule -Force
 }    
 }
-
 function Step-oobeExecutionPolicyRestricted {
     [CmdletBinding()]
     param ()
@@ -327,8 +327,7 @@ function Step-oobeRestartComputer {
         Start-Sleep -Seconds 30
         Restart-Computer
     }
-}
-    
+} 
 
 #endregion
 
