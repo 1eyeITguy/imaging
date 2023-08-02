@@ -15,10 +15,11 @@ $Global:oobeCloud = @{
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $false
-    oobeUpdateWindows = $false
+    oobeUpdateDrivers = $true
+    oobeUpdateWindows = $true
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
+    oobeUpdateDefender = $true
     oobeCleanUp = $false
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
@@ -253,11 +254,11 @@ function Step-oobeSetDeviceRegSettings {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDeviceRegSettings -eq $true)) {
 
-    Write-host -ForegroundColor DarkCyan "Set Silent Account Configuration"
+    #Write-host -ForegroundColor DarkCyan "Set Silent Account Configuration"
 
-        $HKLMregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive'##Path to HKLM keys
-        if(!(Test-Path $HKLMregistryPath)){New-Item -Path $HKLMregistryPath -Force}
-        New-ItemProperty -Path $HKLMregistryPath -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null ##Enable silent account configuration
+        #$HKLMregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive'##Path to HKLM keys
+        #if(!(Test-Path $HKLMregistryPath)){New-Item -Path $HKLMregistryPath -Force}
+        #New-ItemProperty -Path $HKLMregistryPath -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null ##Enable silent account configuration
 
     Write-host -ForegroundColor DarkCyan "disable firstlogon animation"
 
