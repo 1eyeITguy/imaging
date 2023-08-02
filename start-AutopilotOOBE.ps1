@@ -274,15 +274,8 @@ function Step-oobeSetDeviceRegSettings {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
-
         Write-host -ForegroundColor DarkCyan "Updating Defender Signatures" 
-        try {
-            Update-MpSignature
-            exit 0
-        }
-        catch {
-            exit 0 <#Do this if a terminating exception happens#>
-        }
+        Update-MpSignature
     }
 }
 function Step-oobeCleanUp {
