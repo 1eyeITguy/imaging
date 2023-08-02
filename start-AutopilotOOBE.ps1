@@ -21,6 +21,7 @@ $Global:oobeCloud = @{
     oobeSetDeviceRegSettings = $true
     oobeUpdateDefender = $true
     oobeCleanUp = $false
+    oobeCreateLocalUser = $true
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
 }
@@ -278,6 +279,33 @@ function Step-oobeSetDeviceRegSettings {
         Update-MpSignature
     }
 }
+function Step-oobeCreateLocalUser {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeCreateLocalUser -eq $true)) {
+        Write-Host -ForegroundColor Yellow 'Creating local user ssLocalAdmin'
+        # Generate a random password of 16 characters
+        function Generate-RandomPassword {
+            $validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?/"
+            $passwordLength = 16
+            $random = New-Object System.Random
+            $password = 1..$passwordLength | ForEach-Object { $validCharacters[$random.Next(0, $validCharacters.Length)] }
+            return $password -join ''
+        }
+            $Username = "ssLocalAdmin"
+            $Password = Generate-RandomPassword
+            $NeverExpire = $true
+            $UserParams = @{
+                "Name"                  = $Username
+                "Password"              = (ConvertTo-SecureString -AsPlainText $Password -Force)
+                "UserMayNotChangePassword" = $true
+                "PasswordNeverExpires"  = $NeverExpire
+            }
+            New-LocalUser @UserParams
+            Write-Output "User '$Username' has been created with password: $Password"
+            Add-LocalGroupMember -Group "Administrators" -Member $Username
+    }
+}
 function Step-oobeCleanUp {
     [CmdletBinding()]
     param ()
@@ -340,6 +368,7 @@ Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
 Step-oobeCleanUp
+Step-oobeCreateLocalUser
 Step-oobeExecutionPolicyRestricted
 Step-oobeRestartComputer
 #=================================================
