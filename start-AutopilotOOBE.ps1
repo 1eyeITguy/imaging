@@ -357,11 +357,11 @@ function Step-oobeRestartComputer {
 Step-oobeExecutionPolicy
 Step-oobePackageManagement
 Step-oobeTrustPSGallery
+Step-oobeUpdateDrivers
+Step-oobeUpdateWindows
 Step-oobeSetDisplay
 Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
-Step-oobeUpdateDrivers
-Step-oobeUpdateWindows
 Show-RestartConfirmation
 Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
