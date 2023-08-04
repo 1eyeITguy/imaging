@@ -359,10 +359,10 @@ Step-oobePackageManagement
 Step-oobeTrustPSGallery
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
+Show-RestartConfirmation
 Step-oobeSetDisplay
 Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
-Show-RestartConfirmation
 Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
