@@ -20,7 +20,7 @@ $Global:oobeCloud = @{
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeUpdateDefender = $true
-    oobeCleanUp = $false
+    oobeInstallOneDrive = $true
     oobeCreateLocalUser = $true
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
@@ -198,7 +198,7 @@ function Step-oobeUpdateWindows {
         }
     }
 }
-function Show-RestartConfirmation {
+function Step-RestartConfirmation {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateWindows -eq $true)) {    
@@ -306,27 +306,13 @@ function Step-oobeCreateLocalUser {
             Add-LocalGroupMember -Group "Administrators" -Member $Username
     }
 }
-function Step-oobeCleanUp {
+function Step-oobeInstallOneDrive {
     [CmdletBinding()]
     param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeCleanUp -eq $true)) {
-    Write-host -ForegroundColor Yellow "Cleaning up ..."
-    $exceptionModule = "Microsoft.Graph.Authentication"
-    $modulesToUninstall = Get-InstalledModule | Where-Object { $_.Name -ne $exceptionModule }
-    foreach ($module in $modulesToUninstall) {
-        $moduleName = $module.Name
-        Write-Host "Uninstalling module: $($moduleName)" -ForegroundColor DarkGray
-        if (Get-Module -Name $moduleName -ListAvailable) {
-            Remove-Module -Name $moduleName -Force
-        }
-        Uninstall-Module -Name $moduleName -Force
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeInstallOneDriver -eq $true)) {
+        Write-Host -ForegroundColor Cyan 'Installing latest version of OneDrive for All Users'
+        Invoke-Expression (Invoke-RestMethod https://raw.githubusercontent.com/1eyeITguy/imaging/main/Install-OneDrive.ps1)
     }
-    Write-Host "Uninstalling module: $exceptionModule" -ForegroundColor DarkGray
-    if (Get-Module -Name $exceptionModule -ListAvailable) {
-        Remove-Module -Name $exceptionModule -Force
-    }
-    Uninstall-Module -Name $exceptionModule -Force
-}    
 }
 function Step-oobeExecutionPolicyRestricted {
     [CmdletBinding()]
@@ -357,9 +343,10 @@ function Step-oobeRestartComputer {
 Step-oobeExecutionPolicy
 Step-oobePackageManagement
 Step-oobeTrustPSGallery
+Step-oobeInstallOneDrive
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
-Show-RestartConfirmation
+Step-RestartConfirmation
 Step-oobeSetDisplay
 Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
@@ -367,7 +354,6 @@ Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
 Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
-Step-oobeCleanUp
 Step-oobeCreateLocalUser
 Step-oobeExecutionPolicyRestricted
 Step-oobeRestartComputer
