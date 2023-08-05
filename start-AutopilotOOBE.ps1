@@ -15,8 +15,8 @@ $Global:oobeCloud = @{
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $true
-    oobeUpdateWindows = $true
+    oobeUpdateDrivers = $false
+    oobeUpdateWindows = $false
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeUpdateDefender = $true
@@ -244,6 +244,9 @@ function Step-oobeSetUserRegSettings {
 
     Write-host -ForegroundColor DarkCyan "Disable Chat on Taskbar"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
+
+    Write-Host -ForegroundColor DarkCyan "Removing OndDrive key"
+    REG DELETE "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f
 
     # Unload Default User Profile hive
     REG UNLOAD "HKU\Default"
