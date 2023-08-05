@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Download the latest OneDriveSetup.exe on the production ring, replace built-in version and initiate per-machine OneDrive setup.
+    Download the latest OneDriveSetup.exe on the production ring, replace built-in version, and initiate per-machine OneDrive setup.
 
 .DESCRIPTION
     This script will download the latest OneDriveSetup.exe from the production ring, replace the built-in executable, initiate the 
@@ -73,37 +73,28 @@ try {
         Write-Host "Detected 'OneDriveSetup.exe' in the temporary download path"
 
         try {
-            # Set owner to SYSTEM for the built-in OneDriveSetup executable
-            $LocalSystemPrincipal = "NT AUTHORITY\SYSTEM"
-            Write-Host "Setting ownership for '$LocalSystemPrincipal' on file: $OneDriveSetupFile"
-            Set-NTFSOwner -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -ErrorAction Stop
+            # Use icacls to grant FullControl access to SYSTEM on the OneDriveSetup executable
+            Write-Host "Granting FullControl access to SYSTEM on file: $OneDriveSetupFile"
+            icacls $OneDriveSetupFile /grant "NT AUTHORITY\SYSTEM:(F)" /T /C /Q /L
 
             try {
-                # Grant FullControl access to SYSTEM on the OneDriveSetup executable
-                Write-Host "Setting access right 'FullControl' for owner '$LocalSystemPrincipal' on file: $OneDriveSetupFile"
-                Add-NTFSAccess -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -AccessRights "FullControl" -AccessType "Allow" -ErrorAction Stop
+                # Replace the built-in OneDriveSetup executable with the downloaded version
+                Write-Host "Replacing built-in 'OneDriveSetup.exe' with the downloaded version"
+                Copy-Item -Path $OneDriveSetupFilePath -Destination $OneDriveSetupFile -Force -ErrorAction Stop
 
                 try {
-                    # Replace the built-in OneDriveSetup executable with the downloaded version
-                    Write-Host "Replacing built-in 'OneDriveSetup.exe' with the downloaded version"
-                    Copy-Item -Path $OneDriveSetupFilePath -Destination $OneDriveSetupFile -Force -ErrorAction Stop
-
-                    try {
-                        # Initiate updated built-in OneDriveSetup.exe and install as per-machine
-                        Write-Host "Initiating per-machine OneDrive setup installation, this process could take some time"
-                        Start-Process -FilePath $OneDriveSetupFile -ArgumentList "/allusers /update" -Wait -ErrorAction Stop
-                        Write-Host "Successfully installed OneDrive as per-machine"
-                    } catch [System.Exception] {
-                        Write-Host "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)"
-                    }
+                    # Initiate updated built-in OneDriveSetup.exe and install as per-machine
+                    Write-Host "Initiating per-machine OneDrive setup installation, this process could take some time"
+                    Start-Process -FilePath $OneDriveSetupFile -ArgumentList "/allusers /update" -Wait -ErrorAction Stop
+                    Write-Host "Successfully installed OneDrive as per-machine"
                 } catch [System.Exception] {
-                    Write-Host "Failed to copy '$OneDriveSetupFilePath' to the default location. Error message: $($_.Exception.Message)"
+                    Write-Host "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)"
                 }
             } catch [System.Exception] {
-                Write-Host "Failed to set access right 'FullControl' for owner on file: '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
+                Write-Host "Failed to copy '$OneDriveSetupFilePath' to the default location. Error message: $($_.Exception.Message)"
             }
         } catch [System.Exception] {
-            Write-Host "Failed to set ownership for '$LocalSystemPrincipal' on file: $OneDriveSetupFile. Error message: $($_.Exception.Message)"
+            Write-Host "Failed to grant FullControl access to SYSTEM on file: $OneDriveSetupFile. Error message: $($_.Exception.Message)"
         }
     } else {
         Write-Host "Unable to locate the download path '$DownloadPath', ensure the directory exists."
