@@ -21,6 +21,7 @@ $SetupFolder = "$($env:SystemRoot)\Temp\OneDriveSetup"
 $SetupFileName = "OneDriveSetup.exe"
 $OneDriveVersion = ""
 
+
 #region Functions
 
 function Write-LogEntry {
@@ -153,7 +154,7 @@ function Install-OneDrive {
     Try {
         # Running OneDrive installer
         Write-LogEntry -Value "Starting install OneDrive as per-machine" -Severity 1
-        $OneDriveInstall = Start-Process $SetupFilePath -ArgumentList "/allusers /update" -Wait -PassThru -ErrorAction Stop
+        $OneDriveInstall = Start-Process $SetupFilePath -ArgumentList "/allusers /update" -NoNewWindow -PassThru -ErrorAction Stop
     } catch [System.Exception] {
         Write-LogEntry -Value "Error installing OneDrive as per-machine. ErrorMessage: $($_.Exception.Message)" -Severity 3
     }
