@@ -20,7 +20,6 @@ $Global:oobeCloud = @{
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeUpdateDefender = $true
-    oobeInstallOneDrive = $true
     oobeCreateLocalUser = $true
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
@@ -255,12 +254,6 @@ function Step-oobeSetDeviceRegSettings {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDeviceRegSettings -eq $true)) {
 
-    #Write-host -ForegroundColor DarkCyan "Set Silent Account Configuration"
-
-        #$HKLMregistryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive'##Path to HKLM keys
-        #if(!(Test-Path $HKLMregistryPath)){New-Item -Path $HKLMregistryPath -Force}
-        #New-ItemProperty -Path $HKLMregistryPath -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null ##Enable silent account configuration
-
     Write-host -ForegroundColor DarkCyan "disable firstlogon animation"
 
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableFirstLogonAnimation" -Value 0 -Type DWord
@@ -306,25 +299,6 @@ function Step-oobeCreateLocalUser {
             Add-LocalGroupMember -Group "Administrators" -Member $Username
     }
 }
-function Step-oobeInstallOneDrive {
-    [CmdletBinding()]
-    param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeInstallOneDrive -eq $true)) {
-        Write-Host -ForegroundColor Yellow 'Installing latest version of OneDrive for All Users'
-        # Download the latest OneDriveSetup.exe from Microsoft
-        $OneDriveSetupURL = "https://go.microsoft.com/fwlink/p/?LinkId=2182910"
-        $DownloadPath = "$env:TEMP\OneDriveSetup.exe"
-        Invoke-WebRequest -Uri $OneDriveSetupURL -OutFile $DownloadPath
-
-# Install or update OneDrive for all users
-$InstallArgs = "/allusers /update"
-Start-Process -FilePath $DownloadPath -ArgumentList $InstallArgs -Wait
-
-# Clean up temporary files
-Remove-Item $DownloadPath -Force
-
-    }
-}
 function Step-oobeExecutionPolicyRestricted {
     [CmdletBinding()]
     param ()
@@ -354,7 +328,6 @@ function Step-oobeRestartComputer {
 Step-oobeExecutionPolicy
 Step-oobePackageManagement
 Step-oobeTrustPSGallery
-Step-oobeInstallOneDrive
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
 Step-RestartConfirmation
