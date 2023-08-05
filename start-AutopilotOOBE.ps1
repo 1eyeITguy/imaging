@@ -280,7 +280,7 @@ function Step-oobeCreateLocalUser {
         # Generate a random password of 16 characters
         function Generate-RandomPassword {
             $validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?/"
-            $passwordLength = 32
+            $passwordLength = 64
             $random = New-Object System.Random
             $password = 1..$passwordLength | ForEach-Object { $validCharacters[$random.Next(0, $validCharacters.Length)] }
             return $password -join ''
