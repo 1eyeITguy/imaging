@@ -62,7 +62,7 @@ try {
     }
 
     # Download the OneDriveSetup.exe file to the temporary location
-    $OneDriveSetupURL = "https://go.microsoft.com/fwlink/p/?LinkId=248256"
+    $OneDriveSetupURL = "https://go.microsoft.com/fwlink/p/?LinkID=2182910"
     Write-Host "Attempting to download the latest OneDriveSetup.exe file from the Microsoft download page to the temporary download path: $DownloadPath"
     Write-Host "Using URL for download: $OneDriveSetupURL"
     $OneDriveSetupFilePath = Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe"
