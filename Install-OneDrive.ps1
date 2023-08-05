@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Download the latest OneDriveSetup.exe on the production ring, replace built-in version, and initiate per-machine OneDrive setup.
+    Download the latest OneDriveSetup.exe on the production ring, replace built-in version and initiate per-machine OneDrive setup.
 
 .DESCRIPTION
     This script will download the latest OneDriveSetup.exe from the production ring, replace the built-in executable, initiate the 
-    per-machine install, which will result in the latest version of OneDrive being installed, and synchronization can begin right away.
+    per-machine install which will result in the latest version of OneDrive always being installed, and synchronization can begin right away.
 
 .PARAMETER DownloadPath
     Specify a path for where OneDriveSetup.exe will be temporarily downloaded to.
@@ -23,7 +23,6 @@
     1.0.0 - (2021-01-18) Script created
 #>
 
-[CmdletBinding(SupportsShouldProcess = $true)]
 param (
     [parameter(Mandatory = $false, HelpMessage = "Specify a path for where OneDriveSetup.exe will be temporarily downloaded to.")]
     [ValidateNotNullOrEmpty()]
@@ -45,8 +44,8 @@ foreach ($Module in $Modules) {
         try {
             # Install NuGet package provider
             $PackageProvider = Install-PackageProvider -Name NuGet -Force -Verbose:$false
-
-            # Install the current missing module
+        
+            # Install current missing module
             Install-Module -Name $Module -Force -ErrorAction Stop -Confirm:$false -Verbose:$false
         } catch [System.Exception] {
             Write-Warning -Message "An error occurred while attempting to install $($Module) module. Error message: $($_.Exception.Message)"
@@ -54,247 +53,78 @@ foreach ($Module in $Modules) {
     }
 }
 
-# Determine the localized name of the principals required for the functionality of this script
-$LocalSystemPrincipal = "NT AUTHORITY\SYSTEM"
-
-function Write-LogEntry {
-    param (
-        [parameter(Mandatory = $true, HelpMessage = "Value added to the log file.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$Value,
-
-        [parameter(Mandatory = $true, HelpMessage = "Severity for the log entry. 1 for Informational, 2 for Warning, and 3 for Error.")]
-        [ValidateNotNullOrEmpty()]
-        [ValidateSet("1", "2", "3")]
-        [string]$Severity,
-
-        [parameter(Mandatory = $false, HelpMessage = "Name of the log file that the entry will be written to.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$FileName = "Invoke-OneDriveSetupUpdate.log"
-    )
-
-    # Determine log file location
-    $LogFilePath = Join-Path -Path (Join-Path -Path $env:windir -ChildPath "Temp") -ChildPath $FileName
-
-    # Construct time stamp for log entry
-    $Time = -join @((Get-Date -Format "HH:mm:ss.fff"), "+", (Get-WmiObject -Class Win32_TimeZone | Select-Object -ExpandProperty Bias))
-
-    # Construct date for log entry
-    $Date = (Get-Date -Format "MM-dd-yyyy")
-
-    # Construct context for log entry
-    $Context = $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)
-
-    # Construct final log entry
-    $LogText = "<![LOG[$($Value)]LOG]!><time=""$($Time)"" date=""$($Date)"" component=""OneDriveSetupUpdate"" context=""$($Context)"" type=""$($Severity)"" thread=""$($PID)"" file="""">"
-
-    # Add value to the log file
-    try {
-        Out-File -InputObject $LogText -Append -NoClobber -Encoding Default -FilePath $LogFilePath -ErrorAction Stop
-    } catch [System.Exception] {
-        Write-Warning -Message "Unable to append log entry to Invoke-OneDriveSetupUpdate.log file. Error message: $($_.Exception.Message)"
-    }
-}
-
-function Start-DownloadFile {
-    param (
-        [parameter(Mandatory = $true, HelpMessage = "URL for the file to be downloaded.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$URL,
-
-        [parameter(Mandatory = $true, HelpMessage = "Folder where the file will be downloaded.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path,
-
-        [parameter(Mandatory = $true, HelpMessage = "Name of the file including the file extension.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name
-    )
-
-    # Set global variable
-    $ErrorActionPreference = "Stop"
-
-    # Construct WebClient object
-    $WebClient = New-Object -TypeName "System.Net.WebClient"
-
-    try {
-        # Create path if it doesn't exist
-        if (-not (Test-Path -Path $Path)) {
-            New-Item -Path $Path -ItemType Directory -Force -ErrorAction Stop | Out-Null
-        }
-
-        # Start the download of the file
-        $WebClient.DownloadFile($URL, (Join-Path -Path $Path -ChildPath $Name))
-    } catch [System.Exception] {
-        Write-LogEntry -Value " - Failed to download file from URL '$($URL)'" -Severity 3
-    } finally {
-        # Dispose of the WebClient object
-        $WebClient.Dispose()
-    }
-}
-
-function Invoke-Executable {
-    param (
-        [parameter(Mandatory = $true, HelpMessage = "Specify the file name or path of the executable to be invoked, including the extension.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$FilePath,
-
-        [parameter(Mandatory = $false, HelpMessage = "Specify arguments that will be passed to the executable.")]
-        [ValidateNotNull()]
-        [string]$Arguments
-    )
-
-    # Construct a hash-table for default parameter splatting
-    $SplatArgs = @{
-        FilePath = $FilePath
-        NoNewWindow = $true
-        Passthru = $true
-        ErrorAction = "Stop"
-    }
-
-    # Add ArgumentList param if present
-    if (-not ([System.String]::IsNullOrEmpty($Arguments))) {
-        $SplatArgs.Add("ArgumentList", $Arguments)
-    }
-
-    # Invoke the executable and wait for the process to exit
-    try {
-        $Invocation = Start-Process @SplatArgs
-        $Handle = $Invocation.Handle
-        $Invocation.WaitForExit()
-    } catch [System.Exception] {
-        Write-Warning -Message $_.Exception.Message
-        return $null
-    }
-
-    # Handle return value with exit code from the process
-    return $Invocation.ExitCode
-}
-
 try {
-    # Attempt to remove the existing OneDriveSetup.exe in the temporary location
-    if (Test-Path -Path (Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe")) {
-        Write-LogEntry -Value "Found existing 'OneDriveSetup.exe' in the temporary download path, removing it" -Severity 1
-        Remove-Item -Path (Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe") -Force -ErrorAction Stop
+    # Attempt to remove existing OneDriveSetup.exe in the temporary location
+    $OneDriveSetupFile = Join-Path -Path $env:windir -ChildPath "SysWOW64\OneDriveSetup.exe"
+    if (Test-Path -Path $OneDriveSetupFile) {
+        Write-Host "Found existing 'OneDriveSetup.exe' in the temporary download path, removing it"
+        Remove-Item -Path $OneDriveSetupFile -Force -ErrorAction Stop
     }
 
     # Download the OneDriveSetup.exe file to the temporary location
     $OneDriveSetupURL = "https://go.microsoft.com/fwlink/p/?LinkId=248256"
-    Write-LogEntry -Value "Attempting to download the latest OneDriveSetup.exe file from the Microsoft download page to the temporary download path: $($DownloadPath)" -Severity 1
-    Write-LogEntry -Value "Using URL for download: $($OneDriveSetupURL)" -Severity 1
-    Start-DownloadFile -URL $OneDriveSetupURL -Path $DownloadPath -Name "OneDriveSetup.exe" -ErrorAction Stop
+    Write-Host "Attempting to download the latest OneDriveSetup.exe file from the Microsoft download page to the temporary download path: $DownloadPath"
+    Write-Host "Using URL for download: $OneDriveSetupURL"
+    $OneDriveSetupFilePath = Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe"
+    Invoke-WebRequest -Uri $OneDriveSetupURL -OutFile $OneDriveSetupFilePath -ErrorAction Stop
 
-    # Validate that the OneDriveSetup.exe file has successfully been downloaded to the temporary location
-    if (Test-Path -Path (Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe")) {
-        Write-LogEntry -Value "Detected 'OneDriveSetup.exe' in the temporary download path" -Severity 1
+    # Validate OneDriveSetup.exe file has been successfully downloaded to the temporary location
+    if (Test-Path -Path $OneDriveSetupFilePath) {
+        Write-Host "Detected 'OneDriveSetup.exe' in the temporary download path"
 
         try {
-            # Attempt to import the NTFSSecurity module as a verification that it was successfully installed
-            Write-LogEntry -Value "Attempting to import the 'NTFSSecurity' module" -Severity 1
-            Import-Module -Name "NTFSSecurity" -Verbose:$false -ErrorAction Stop
+            # Set owner to SYSTEM for the built-in OneDriveSetup executable
+            $LocalSystemPrincipal = "NT AUTHORITY\SYSTEM"
+            $OneDriveSetupOwner = (Get-NTFSOwner -Path $OneDriveSetupFile -ErrorAction Stop).Owner | Select-Object -ExpandProperty "AccountName"
+            Write-Host "Setting ownership for '$LocalSystemPrincipal' on file: $OneDriveSetupFile"
+            Set-NTFSOwner -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -ErrorAction Stop
 
             try {
-                # Save the existing access rules and ownership information
-                Write-LogEntry -Value "Attempting to read and temporarily store existing access permissions for the built-in 'OneDriveSetup.exe' executable" -Severity 1
-                $OneDriveSetupFile = Join-Path -Path $env:windir -ChildPath "SysWOW64\OneDriveSetup.exe"
-                Write-LogEntry -Value "Reading from file: $($OneDriveSetupFile)" -Severity 1
-                $OneDriveSetupAccessRules = Get-NTFSAccess -Path $OneDriveSetupFile -Verbose:$false -ErrorAction Stop
-                $OneDriveSetupOwner = (Get-NTFSOwner -Path $OneDriveSetupFile -ErrorAction Stop).Owner | Select-Object -ExpandProperty "AccountName"
+                # Grant FullControl access to SYSTEM on the OneDriveSetup executable
+                Write-Host "Setting access right 'FullControl' for owner '$LocalSystemPrincipal' on file: $OneDriveSetupFile"
+                Add-NTFSAccess -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -AccessRights "FullControl" -AccessType "Allow" -ErrorAction Stop
 
                 try {
-                    # Set the owner to the system for the built-in OneDriveSetup executable
-                    Write-LogEntry -Value "Setting ownership for '$($LocalSystemPrincipal)' on file: $($OneDriveSetupFile)" -Severity 1
-                    Set-NTFSOwner -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -ErrorAction Stop
+                    # Replace the built-in OneDriveSetup executable with the downloaded version
+                    Write-Host "Replacing built-in 'OneDriveSetup.exe' with the downloaded version"
+                    Copy-Item -Path $OneDriveSetupFilePath -Destination $OneDriveSetupFile -Force -ErrorAction Stop
 
                     try {
-                        Write-LogEntry -Value "Setting access right 'FullControl' for the owner '$($LocalSystemPrincipal)' on file: '$($OneDriveSetupFile)'" -Severity 1
-                        Add-NTFSAccess -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -AccessRights "FullControl" -AccessType "Allow" -ErrorAction Stop
+                        # Restore access rules and ownership information
+                        Write-Host "Restoring access rules and ownership information for '$OneDriveSetupFile'"
+                        Restore-NTFSAccess -Path $OneDriveSetupFile -AccessRules $OneDriveSetupAccessRules -Owner $OneDriveSetupOwner -ErrorAction Stop
 
                         try {
-                            # Remove the built-in OneDriveSetup executable
-                            Write-LogEntry -Value "Attempting to remove the built-in 'OneDriveSetup.exe' executable file: $($OneDriveSetupFile)" -Severity 1
-                            Remove-Item -Path $OneDriveSetupFile -Force -ErrorAction Stop
+                            # Disable inheritance for the updated built-in OneDriveSetup executable
+                            Write-Host "Disabling and removing inherited access rules on file: $OneDriveSetupFile"
+                            Disable-NTFSAccessInheritance -Path $OneDriveSetupFile -RemoveInheritedAccessRules -ErrorAction Stop
 
                             try {
-                                # Copy the downloaded OneDriveSetup file to the default location
-                                $OneDriveSetupSourceFile = Join-Path -Path $DownloadPath -ChildPath "OneDriveSetup.exe"
-                                Write-LogEntry -Value "Attempting to copy the downloaded '$($OneDriveSetupSourceFile)' to: $($OneDriveSetupFile)" -Severity 1
-                                Copy-Item -Path $OneDriveSetupSourceFile -Destination $OneDriveSetupFile -Force -Verbose:$false -ErrorAction Stop
-
-                                try {
-                                    # Restore access rules and owner information
-                                    foreach ($OneDriveSetupAccessRule in $OneDriveSetupAccessRules) {
-                                        if ($OneDriveSetupAccessRule.Account.AccountName -match "APPLICATION PACKAGE AUTHORITY") {
-                                            $AccountName = ($OneDriveSetupAccessRule.Account.AccountName.Split("\"))[1]
-                                        } else {
-                                            $AccountName = $OneDriveSetupAccessRule.Account.AccountName
-                                        }
-
-                                        Write-LogEntry -Value "Restoring access right '$($OneDriveSetupAccessRule.AccessRights)' for account '$($AccountName)' on file: $($OneDriveSetupFile)" -Severity 1
-                                        Add-NTFSAccess -Path $OneDriveSetupFile -Account $AccountName -AccessRights $OneDriveSetupAccessRule.AccessRights -AccessType "Allow" -ErrorAction Stop
-                                    }
-
-                                    try {
-                                        # Disable inheritance for the updated built-in OneDriveSetup executable
-                                        Write-LogEntry -Value "Disabling and removing inherited access rules on file: $($OneDriveSetupFile)" -Severity 1
-                                        Disable-NTFSAccessInheritance -Path $OneDriveSetupFile -RemoveInheritedAccessRules -ErrorAction Stop
-
-                                        try {
-                                            # Restore owner information
-                                            Write-LogEntry -Value "Restoring owner '$($OneDriveSetupOwner)' on file: $($OneDriveSetupFile)" -Severity 1
-                                            Set-NTFSOwner -Path $OneDriveSetupFile -Account $OneDriveSetupOwner -ErrorAction Stop
-
-                                            try {
-                                                # Attempt to remove the existing OneDriveSetup.exe in the temporary location
-                                                if (Test-Path -Path $OneDriveSetupSourceFile) {
-                                                    Write-LogEntry -Value "Deleting 'OneDriveSetup.exe' from the temporary download path" -Severity 1
-                                                    Remove-Item -Path $OneDriveSetupSourceFile -Force -ErrorAction Stop
-                                                }
-
-                                                Write-LogEntry -Value "Successfully updated built-in 'OneDriveSetup.exe' executable to the latest version" -Severity 1
-
-                                                try {
-                                                    # Initiate the updated built-in OneDriveSetup.exe and install as per-machine
-                                                    Write-LogEntry -Value "Initiate per-machine OneDrive setup installation, this process could take some time" -Severity 1
-                                                    Invoke-Executable -FilePath $OneDriveSetupFile -Arguments "/allusers /update" -ErrorAction Stop
-
-                                                    Write-LogEntry -Value "Successfully installed OneDrive as per-machine" -Severity 1
-                                                } catch [System.Exception] {
-                                                    Write-LogEntry -Value "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)" -Severity 3
-                                                }
-                                            } catch [System.Exception] {
-                                                Write-LogEntry -Value "Failed to remove '$($OneDriveSetupSourceFile)'. Error message: $($_.Exception.Message)" -Severity 3
-                                            }
-                                        } catch [System.Exception] {
-                                            Write-LogEntry -Value "Failed to disable inheritance for '$($OneDriveSetupFile)'. Error message: $($_.Exception.Message)" -Severity 3
-                                        }
-                                    } catch [System.Exception] {
-                                        Write-LogEntry -Value "Failed to restore access right '$($OneDriveSetupAccessRule.AccessRights)' for account '$($OneDriveSetupAccessRule.Account.AccountName)' on file '$($OneDriveSetupFile)'. Error message: $($_.Exception.Message)" -Severity 3
-                                    }
-                                } catch [System.Exception] {
-                                    Write-LogEntry -Value "Failed to copy '$($OneDriveSetupSourceFile)' to the default location. Error message: $($_.Exception.Message)" -Severity 3
-                                }
+                                # Initiate updated built-in OneDriveSetup.exe and install as per-machine
+                                Write-Host "Initiating per-machine OneDrive setup installation, this process could take some time"
+                                Start-Process -FilePath $OneDriveSetupFile -ArgumentList "/allusers /update" -Wait -ErrorAction Stop
+                                Write-Host "Successfully installed OneDrive as per-machine"
                             } catch [System.Exception] {
-                                Write-LogEntry -Value "Failed to remove the built-in executable file '$($OneDriveSetupFile)'. Error message: $($_.Exception.Message)" -Severity 3
+                                Write-Host "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)"
                             }
                         } catch [System.Exception] {
-                            Write-LogEntry -Value "Failed to set access right 'FullControl' for owner on file: '$($OneDriveSetupFile)'. Error message: $($_.Exception.Message)" -Severity 3
+                            Write-Host "Failed to disable inheritance for '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
                         }
                     } catch [System.Exception] {
-                        Write-LogEntry -Value "Failed to set ownership for '$($LocalSystemPrincipal)' on file: $($OneDriveSetupFile). Error message: $($_.Exception.Message)" -Severity 3
+                        Write-Host "Failed to copy '$OneDriveSetupFilePath' to the default location. Error message: $($_.Exception.Message)"
                     }
                 } catch [System.Exception] {
-                    Write-LogEntry -Value "Failed to temporarily store existing access permissions for the built-in 'OneDriveSetup.exe' executable. Error message: $($_.Exception.Message)" -Severity 3
+                    Write-Host "Failed to remove built-in executable file '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
                 }
             } catch [System.Exception] {
-                Write-LogEntry -Value "Failed to import the 'NTFSSecurity' module. Error message: $($_.Exception.Message)" -Severity 3
+                Write-Host "Failed to set access right 'FullControl' for owner on file: '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
             }
         } catch [System.Exception] {
-            Write-LogEntry -Value "Unable to detect 'OneDriveSetup.exe' in the temporary download path" -Severity 3
+            Write-Host "Failed to set ownership for '$LocalSystemPrincipal' on file: $OneDriveSetupFile. Error message: $($_.Exception.Message)"
         }
     } else {
-        Write-LogEntry -Value "Unable to locate download path '$($DownloadPath)', ensure the directory exists" -Severity 3
+        Write-Host "Unable to locate the download path '$DownloadPath', ensure the directory exists."
     }
 } catch [System.Exception] {
-    Write-LogEntry -Value "Failed to download OneDriveSetup.exe file. Error message: $($_.Exception.Message)" -Severity 3
+    Write-Host "Failed to download OneDriveSetup.exe file. Error message: $($_.Exception.Message)"
 }
