@@ -311,7 +311,18 @@ function Step-oobeInstallOneDrive {
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeInstallOneDrive -eq $true)) {
         Write-Host -ForegroundColor Yellow 'Installing latest version of OneDrive for All Users'
-        Invoke-Expression (Invoke-RestMethod https://raw.githubusercontent.com/1eyeITguy/imaging/main/Install-OneDrive.ps1) -Verbose
+        # Download the latest OneDriveSetup.exe from Microsoft
+        $OneDriveSetupURL = "https://go.microsoft.com/fwlink/p/?LinkId=2182910"
+        $DownloadPath = "$env:TEMP\OneDriveSetup.exe"
+        Invoke-WebRequest -Uri $OneDriveSetupURL -OutFile $DownloadPath
+
+# Install or update OneDrive for all users
+$InstallArgs = "/allusers /update"
+Start-Process -FilePath $DownloadPath -ArgumentList $InstallArgs -Wait
+
+# Clean up temporary files
+Remove-Item $DownloadPath -Force
+
     }
 }
 function Step-oobeExecutionPolicyRestricted {
