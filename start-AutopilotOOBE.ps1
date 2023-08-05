@@ -310,8 +310,8 @@ function Step-oobeInstallOneDrive {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeInstallOneDrive -eq $true)) {
-        Write-Host -ForegroundColor Cyan 'Installing latest version of OneDrive for All Users'
-        Invoke-Expression (Invoke-RestMethod https://raw.githubusercontent.com/1eyeITguy/imaging/main/Install-OneDrive.ps1)
+        Write-Host -ForegroundColor Yellow 'Installing latest version of OneDrive for All Users'
+        Invoke-Expression (Invoke-RestMethod https://raw.githubusercontent.com/1eyeITguy/imaging/main/Install-OneDrive.ps1) -Verbose
     }
 }
 function Step-oobeExecutionPolicyRestricted {
