@@ -75,7 +75,6 @@ try {
         try {
             # Set owner to SYSTEM for the built-in OneDriveSetup executable
             $LocalSystemPrincipal = "NT AUTHORITY\SYSTEM"
-            $OneDriveSetupOwner = (Get-NTFSOwner -Path $OneDriveSetupFile -ErrorAction Stop).Owner | Select-Object -ExpandProperty "AccountName"
             Write-Host "Setting ownership for '$LocalSystemPrincipal' on file: $OneDriveSetupFile"
             Set-NTFSOwner -Path $OneDriveSetupFile -Account $LocalSystemPrincipal -ErrorAction Stop
 
@@ -90,31 +89,15 @@ try {
                     Copy-Item -Path $OneDriveSetupFilePath -Destination $OneDriveSetupFile -Force -ErrorAction Stop
 
                     try {
-                        # Restore access rules and ownership information
-                        Write-Host "Restoring access rules and ownership information for '$OneDriveSetupFile'"
-                        Restore-NTFSAccess -Path $OneDriveSetupFile -AccessRules $OneDriveSetupAccessRules -Owner $OneDriveSetupOwner -ErrorAction Stop
-
-                        try {
-                            # Disable inheritance for the updated built-in OneDriveSetup executable
-                            Write-Host "Disabling and removing inherited access rules on file: $OneDriveSetupFile"
-                            Disable-NTFSAccessInheritance -Path $OneDriveSetupFile -RemoveInheritedAccessRules -ErrorAction Stop
-
-                            try {
-                                # Initiate updated built-in OneDriveSetup.exe and install as per-machine
-                                Write-Host "Initiating per-machine OneDrive setup installation, this process could take some time"
-                                Start-Process -FilePath $OneDriveSetupFile -ArgumentList "/allusers /update" -Wait -ErrorAction Stop
-                                Write-Host "Successfully installed OneDrive as per-machine"
-                            } catch [System.Exception] {
-                                Write-Host "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)"
-                            }
-                        } catch [System.Exception] {
-                            Write-Host "Failed to disable inheritance for '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
-                        }
+                        # Initiate updated built-in OneDriveSetup.exe and install as per-machine
+                        Write-Host "Initiating per-machine OneDrive setup installation, this process could take some time"
+                        Start-Process -FilePath $OneDriveSetupFile -ArgumentList "/allusers /update" -Wait -ErrorAction Stop
+                        Write-Host "Successfully installed OneDrive as per-machine"
                     } catch [System.Exception] {
-                        Write-Host "Failed to copy '$OneDriveSetupFilePath' to the default location. Error message: $($_.Exception.Message)"
+                        Write-Host "Failed to install OneDrive as per-machine. Error message: $($_.Exception.Message)"
                     }
                 } catch [System.Exception] {
-                    Write-Host "Failed to remove built-in executable file '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
+                    Write-Host "Failed to copy '$OneDriveSetupFilePath' to the default location. Error message: $($_.Exception.Message)"
                 }
             } catch [System.Exception] {
                 Write-Host "Failed to set access right 'FullControl' for owner on file: '$OneDriveSetupFile'. Error message: $($_.Exception.Message)"
