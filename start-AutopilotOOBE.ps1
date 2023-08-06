@@ -10,7 +10,7 @@ $null = Start-Transcript -Path (Join-Path "$env:SystemRoot\Temp" $Transcript) -E
 #   oobeCloud Settings
 #=================================================
 $Global:oobeCloud = @{
-    oobeSetDisplay = $true
+    oobeSetDisplay = $false
     oobeSetDateTime = $true
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
@@ -285,7 +285,8 @@ function Step-oobeSetDeviceRegSettings {
         Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings" -Value 1 -Type DWord
         Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings_ProviderSet" -Value 1 -Type DWord
     }
-}function Step-oobeUpdateDefender {
+}
+function Step-oobeUpdateDefender {
     [CmdletBinding()]
     param ()
     if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
@@ -323,7 +324,7 @@ function Step-oobeCreateLocalUser {
 function Step-oobeExecutionPolicyRestricted {
     [CmdletBinding()]
     param ()
-    if ($env:UserName -eq 'defaultuser0') {
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeExecutionPolicyRestricted -eq $true)) {
         if ((Get-ExecutionPolicy) -ne 'Restricted') {
             Write-Host -ForegroundColor Cyan 'Set-ExecutionPolicy Restricted'
             Set-ExecutionPolicy Restricted -Force
