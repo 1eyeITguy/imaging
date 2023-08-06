@@ -15,8 +15,8 @@ $Global:oobeCloud = @{
     oobeRegisterAutopilot = $true
     oobeRemoveAppxPackage = $true
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeUpdateDrivers = $false
-    oobeUpdateWindows = $false
+    oobeUpdateDrivers = $true
+    oobeUpdateWindows = $true
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
     oobeUpdateDefender = $true
@@ -245,10 +245,11 @@ function Step-oobeSetUserRegSettings {
     Write-host -ForegroundColor DarkCyan "Disable Chat on Taskbar"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
 
-    Write-Host -ForegroundColor DarkCyan "Removing OndDrive key"
-    REG DELETE "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f
+    #Write-Host -ForegroundColor DarkCyan "Removing OndDrive key"
+    #REG DELETE "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f
 
     # Unload Default User Profile hive
+    Write-Host -ForegroundColor DarkCyan "Unloading the default user registry hive"
     REG UNLOAD "HKU\Default"
     }
 }
@@ -266,6 +267,13 @@ function Step-oobeSetDeviceRegSettings {
 
         Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
         Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
+
+    Write-Host -ForegroundColor DarkCyan "Setting start menu items"
+
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDocuments" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDownloads" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderPictures" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings" -Value 1 -Type DWord
     }
 }function Step-oobeUpdateDefender {
     [CmdletBinding()]
