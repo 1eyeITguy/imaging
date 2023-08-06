@@ -245,10 +245,11 @@ function Step-oobeSetUserRegSettings {
     Write-host -ForegroundColor DarkCyan "Disable Chat on Taskbar"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
 
-    #Write-Host -ForegroundColor DarkCyan "Removing OndDrive key"
-    #REG DELETE "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f
+    Write-Host -ForegroundColor DarkCyan "Setting Terminal as default shell"
+    New-Item -Path HKCU:\Console\%%Startup | out-null
+    New-ItemProperty -Path "HKCU:\Console\%%Startup" -Name "DelegationConsole" -Value "{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}" -force | out-null
+    New-ItemProperty -Path "HKCU:\Console\%%Startup" -Name "DelegationTerminal" -Value "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}" -force | out-null
 
-    # Unload Default User Profile hive
     Write-Host -ForegroundColor DarkCyan "Unloading the default user registry hive"
     REG UNLOAD "HKU\Default"
     }
@@ -265,20 +266,24 @@ function Step-oobeSetDeviceRegSettings {
 
     Write-host -ForegroundColor DarkCyan "Autoset time zone"
 
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location -Name Value -Value "Allow"
-        Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate -Name start -Value "3"
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name Value -Value "Allow"
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate" -Name start -Value "3"
 
     Write-Host -ForegroundColor DarkCyan "Setting start menu items"
-
-if (-Not (Test-Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start")) {
-    New-Item -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Force
-}
-
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDocuments" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDownloads" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderPictures" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings" -Value 1 -Type DWord
-
+        
+        if (-Not (Test-Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start")) {
+            New-Item -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Force
+        }        
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDocuments" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDocuments_ProviderSet" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDownloads" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderDownloads_ProviderSet" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderPictures" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderPictures_ProviderSet" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderFileExplorer" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderFileExplorer_ProviderSet" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings" -Value 1 -Type DWord
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings_ProviderSet" -Value 0 -Type DWord
     }
 }function Step-oobeUpdateDefender {
     [CmdletBinding()]
