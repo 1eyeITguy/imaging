@@ -1,27 +1,26 @@
 {
-    "GroupTag": "",
-    "GroupTagOptions":  [
-                            "OSDCloud",
-                            "Development",
-                            "Enterprise"
-                        ],   
-    "AddToGroup": "",
-    "AddToGroupOptions": [
-                              "Autopilot_Devices-ALL",
-                              "Autopilot_Devices-GeneralUsers"
-                         ],
-    "AssignedComputerName": "",                     
-    "AssignedComputerNameExample": "XXWIN-AAD-XXXX",
-    "AssignedUser": "",
-    "AssignedUserExample": "first.last@sight-sound.com",
-    "Assign": {
-                "IsPresent": true
-              },
-    "Hidden": [
-                "PostAction",
-                "Assign"
-              ],    
-    "PostAction": "Quit",
-    "Run": "WindowsSettings",
-    "Title": "Sight & Sound Autopilot Registration"
+  "GroupTag": "",
+  "GroupTagOptions":  [
+                          "Development",
+                          "Enterprise"
+                      ],   
+  "AddToGroup": "",
+  "AddToGroupOptions": [
+                            "Autopilot_Devices-ALL",
+                            "Autopilot_Devices-GeneralUsers"
+                       ],
+  "AssignedComputerName": "",                     
+  "AssignedComputerNameExample": "XXWIN-EID-XXXX",
+  "AssignedUser": "",
+  "AssignedUserExample": "first.last@sight-sound.com",
+  "Assign": {
+              "IsPresent": true
+            },
+  "Hidden": [
+              "PostAction",
+              "Assign"
+            ],    
+  "PostAction": "Quit",
+  "Run": "WindowsSettings",
+  "Title": "Sight & Sound Autopilot Registration"
 }
