@@ -18,13 +18,11 @@ $Global:oobeCloud = @{
     oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
     oobeSetUserRegSettings = $true
     oobeSetDeviceRegSettings = $true
-    oobeUpdateDefender = $false
     oobeRegisterAutopilot = $true
     oobeCreateLocalUser = $true
     oobeExecutionPolicyRestricted = $true
     oobeRestartComputer = $true
 }
-
 
 function Step-oobeSetDisplay {
     [CmdletBinding()]
@@ -292,14 +290,6 @@ function Step-oobeSetDeviceRegSettings {
             Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\current\device\Start" -Name "AllowPinnedFolderSettings_ProviderSet" -Value 1 -Type DWord
     }
 }
-function Step-oobeUpdateDefender {
-    [CmdletBinding()]
-    param ()
-    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeUpdateDefender -eq $true)) {
-        Write-host -ForegroundColor DarkCyan "Updating Defender Signatures" 
-        Update-MpSignature
-    }
-}
 function Step-oobeCreateLocalUser {
     [CmdletBinding()]
     param ()
@@ -364,7 +354,6 @@ Step-oobeSetDateTime
 Step-oobeRemoveAppxPackage
 Step-oobeSetUserRegSettings
 Step-oobeSetDeviceRegSettings
-Step-oobeUpdateDefender
 Step-oobeRegisterAutopilot
 Step-oobeCreateLocalUser
 Step-oobeExecutionPolicyRestricted
