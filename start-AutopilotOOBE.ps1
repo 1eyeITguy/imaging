@@ -245,6 +245,11 @@ function Step-oobeSetUserRegSettings {
     Write-host -ForegroundColor DarkCyan "Disable Chat on Taskbar"
     REG ADD "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
 
+    Write-host -ForegroundColor DarkCyan "Setting Windows Terminal as default"
+    New-Item -Path HKCU:\Console\%%Startup | out-null
+    New-ItemProperty -Path "HKCU:\Console\%%Startup" -Name "DelegationConsole" -Value "{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}" -force | out-null
+    New-ItemProperty -Path "HKCU:\Console\%%Startup" -Name "DelegationTerminal" -Value "{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}" -force | out-null
+
     Write-Host -ForegroundColor DarkCyan "Unloading the default user registry hive"
     REG UNLOAD "HKU\Default"
     }
