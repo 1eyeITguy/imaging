@@ -1,0 +1,22 @@
+{
+    "Assign": {
+                "IsPresent": true
+              },
+    "AddToGroup": "",
+    "AddToGroupOptions": [
+                              "Autopilot_Devices-ALL",
+                              "Autopilot_Devices-GeneralUsers"
+                         ],
+    "Hidden": [
+                "PostAction",
+                "Assign"
+              ],
+    "AssignedComputerName": "",                     
+    "AssignedComputerNameExample": "XXWIN-AAD-XXXX",
+    "AssignedUser": "",
+    "AssignedUserExample": "first.last@sight-sound.com",
+    "GroupTag": "OSDCloud",
+    "PostAction": "Quit",
+    "Run": "WindowsSettings",
+    "Title": "Sight & Sound Autopilot Registration"
+}
