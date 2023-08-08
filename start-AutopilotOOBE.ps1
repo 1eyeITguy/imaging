@@ -97,9 +97,8 @@ function Step-oobeInstallModuleAutopilotOOBE {
     param ()
     if ($env:UserName -eq 'defaultuser0') {
         $Requirement = Import-Module AutopilotOOBE -PassThru -ErrorAction Ignore
-        if (-not $Requirement)
-        {
-            Write-Host -ForegroundColor Cyan 'Downloading configuration .json file ...'
+
+        Write-Host -ForegroundColor Cyan 'Downloading configuration .json file ...'
             $url = "https://raw.githubusercontent.com/1eyeITguy/imaging/main/Sight_Sound_General.AutopilotOOBE.json"
             $outputPath = "$env:ProgramData\OSDeploy\Sight_Sound_General.AutopilotOOBE.json"
 
@@ -108,7 +107,9 @@ function Step-oobeInstallModuleAutopilotOOBE {
             }
             
             Invoke-WebRequest -Uri $url -OutFile $outputPath
-
+            
+        if (-not $Requirement)
+        {       
             Write-Host -ForegroundColor Cyan 'Install-Module AutopilotOOBE'
             Install-Module -Name AutopilotOOBE -RequiredVersion 21.8.31.1 -Force
             Import-Module AutopilotOOBE -Force
