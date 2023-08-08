@@ -100,14 +100,14 @@ function Step-oobeInstallModuleAutopilotOOBE {
 
         Write-Host -ForegroundColor Cyan 'Downloading configuration .json file ...'
             $url = "https://raw.githubusercontent.com/1eyeITguy/imaging/main/Sight_Sound_General.AutopilotOOBE.json"
-            $outputPath = "$env:ProgramData\OSDeploy\Sight_Sound_General.AutopilotOOBE.json"
+            $outputPath = "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
 
             if (-not (Test-Path (Split-Path $outputPath))) {
                 New-Item -Path (Split-Path $outputPath) -ItemType Directory -Force
             }
             
             Invoke-WebRequest -Uri $url -OutFile $outputPath
-            
+
         if (-not $Requirement)
         {       
             Write-Host -ForegroundColor Cyan 'Install-Module AutopilotOOBE'
