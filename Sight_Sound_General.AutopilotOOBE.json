@@ -6,7 +6,6 @@
                       ],   
   "AddToGroup": "",
   "AddToGroupOptions": [
-                            "Autopilot_Devices-ALL",
                             "Autopilot_Devices-GeneralUsers"
                        ],
   "AssignedComputerName": "",                     
@@ -18,7 +17,8 @@
             },
   "Hidden": [
               "PostAction",
-              "Assign"
+              "Assign",
+              "Docs"
             ],    
   "PostAction": "Quit",
   "Run": "WindowsSettings",
