@@ -10,6 +10,7 @@ $null = Start-Transcript -Path (Join-Path "$env:SystemRoot\Temp" $Transcript) -E
 #   oobeCloud Settings
 #=================================================
 $Global:oobeCloud = @{
+    oobeSetDesktopWallpaper = $true
     oobeUpdateDrivers = $true
     oobeUpdateWindows = $true
     oobeSetDisplay = $false
@@ -24,6 +25,14 @@ $Global:oobeCloud = @{
     oobeRestartComputer = $true
 }
 
+function Step-oobeSetDesktopWallpaper {
+    [CmdletBinding()]
+    param ()
+    if (($env:UserName -eq 'defaultuser0') -and ($Global:oobeCloud.oobeSetDesktopWallpaper -eq $true)) {
+        Write-Host -ForegroundColor Cyan 'Replacing default wallpapers'
+        Invoke-Expression (Invoke-restmethod https://raw.githubusercontent.com/1eyeITguy/imaging/main/set-WindowsDesktopWallpaper.ps1)
+    }
+}
 function Step-oobeSetDisplay {
     [CmdletBinding()]
     param ()
@@ -346,6 +355,7 @@ function Step-oobeRestartComputer {
 Step-oobeExecutionPolicy
 Step-oobePackageManagement
 Step-oobeTrustPSGallery
+Step-oobeSetDesktopWallpaper
 Step-oobeUpdateDrivers
 Step-oobeUpdateWindows
 Step-RestartConfirmation
