@@ -6,6 +6,35 @@ param()
 $Transcript = "$((Get-Date).ToString('yyyy-MM-dd-HHmmss'))-OSDCloud.log"
 $null = Start-Transcript -Path (Join-Path "$env:SystemRoot\Temp" $Transcript) -ErrorAction Ignore
 
+$AutopilotOOBEJson = @'
+{
+  "GroupTag": "",
+  "GroupTagOptions":  [
+                          "Development",
+                          "Enterprise"
+                      ],   
+  "AddToGroup": "",
+  "AddToGroupOptions": [
+                            "Autopilot_Devices-GeneralUsers"
+                       ],
+  "AssignedComputerName": "",                     
+  "AssignedComputerNameExample": "XXWIN-EID-XXXX",
+  "AssignedUser": "",
+  "AssignedUserExample": "first.last@sight-sound.com",
+  "Assign": {
+              "IsPresent": true
+            },
+  "Hidden": [
+              "PostAction",
+              "Assign",
+              "Docs"
+            ],    
+  "PostAction": "Quit",
+  "Run": "WindowsSettings",
+  "Title": "Sight & Sound Autopilot Registration"
+}
+'@
+
 #=================================================
 #   oobeCloud Settings
 #=================================================
@@ -96,15 +125,15 @@ function Step-oobeInstallModuleAutopilotOOBE {
     if ($env:UserName -eq 'defaultuser0') {
         $Requirement = Import-Module AutopilotOOBE -PassThru -ErrorAction Ignore
 
-        Write-Host -ForegroundColor Cyan 'Downloading configuration .json file ...'
-            $url = "https://raw.githubusercontent.com/1eyeITguy/imaging/main/Sight_Sound_General.AutopilotOOBE.json"
-            $outputPath = "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
-
+        Write-Host -ForegroundColor Cyan 'Creating configuration .json file ...'
+           
+        $outputPath = "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
+        
             if (-not (Test-Path (Split-Path $outputPath))) {
                 New-Item -Path (Split-Path $outputPath) -ItemType Directory -Force
             }
-            
-            Invoke-WebRequest -Uri $url -OutFile $outputPath
+
+            $AutopilotOOBEJson | Out-File -FilePath "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding UTF8
 
         if (-not $Requirement)
         {       
