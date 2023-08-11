@@ -129,11 +129,11 @@ function Step-oobeInstallModuleAutopilotOOBE {
            
         $outputPath = "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json"
         
-            if (-not (Test-Path (Split-Path $outputPath))) {
-                New-Item -Path (Split-Path $outputPath) -ItemType Directory -Force
-            }
+        if (-not (Test-Path (Split-Path $outputPath))) {
+            New-Item -Path (Split-Path $outputPath) -ItemType Directory -Force
+        }
 
-            $AutopilotOOBEJson | Out-File -FilePath "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding UTF8
+        $AutopilotOOBEJson | Out-File -FilePath "$env:ProgramData\OSDeploy\OSDeploy.AutopilotOOBE.json" -Encoding UTF8
 
         if (-not $Requirement)
         {       
