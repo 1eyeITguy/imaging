@@ -37,7 +37,6 @@ $AutopilotOOBEJson = @'
                             "Autopilot_Devices-GeneralUsers"
                        ],
   "AssignedComputerName": "",                     
-  "AssignedComputerNameExample": "XXWIN-EID-XXXX",
   "AssignedUser": "",
   "AssignedUserExample": "first.last@sight-sound.com",
   "Assign": {
@@ -46,7 +45,8 @@ $AutopilotOOBEJson = @'
   "Hidden": [
               "PostAction",
               "Assign",
-              "Docs"
+              "Docs",
+              "AssignedUser"
             ],    
   "PostAction": "Quit",
   "Run": "WindowsSettings",
@@ -139,7 +139,8 @@ function Step-oobeInstallModuleAutopilotOOBE {
         if (-not $Requirement)
         {       
             Write-Host -ForegroundColor Cyan 'Install-Module AutopilotOOBE'
-            Install-Module -Name AutopilotOOBE -RequiredVersion 21.8.31.1 -Force
+            #Install-Module -Name AutopilotOOBE -RequiredVersion 21.8.31.1 -Force
+            Install-Module -Name AutopilotOOBE -Force
             Import-Module AutopilotOOBE -Force
             Start-AutopilotOOBE
         }
