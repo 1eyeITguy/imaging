@@ -6,6 +6,25 @@ param()
 $Transcript = "$((Get-Date).ToString('yyyy-MM-dd-HHmmss'))-OSDCloud.log"
 $null = Start-Transcript -Path (Join-Path "$env:SystemRoot\Temp" $Transcript) -ErrorAction Ignore
 
+
+#=================================================
+#   oobeCloud Settings
+#=================================================
+$Global:oobeCloud = @{
+    oobeUpdateDrivers = $true
+    oobeUpdateWindows = $true
+    oobeSetDisplay = $false
+    oobeSetDateTime = $true
+    oobeRemoveAppxPackage = $true
+    oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
+    oobeSetUserRegSettings = $true
+    oobeSetDeviceRegSettings = $true
+    oobeRegisterAutopilot = $true
+    oobeCreateLocalUser = $true
+    oobeExecutionPolicyRestricted = $true
+    oobeRestartComputer = $true
+}
+
 $AutopilotOOBEJson = @'
 {
   "GroupTag": "",
@@ -34,24 +53,6 @@ $AutopilotOOBEJson = @'
   "Title": "Sight & Sound Autopilot Registration"
 }
 '@
-
-#=================================================
-#   oobeCloud Settings
-#=================================================
-$Global:oobeCloud = @{
-    oobeUpdateDrivers = $true
-    oobeUpdateWindows = $true
-    oobeSetDisplay = $false
-    oobeSetDateTime = $true
-    oobeRemoveAppxPackage = $true
-    oobeRemoveAppxPackageName = 'Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GamingApp','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.MicrosoftSolitaireCollection','Microsoft.People','microsoft.windowscommunicationsapps','Microsoft.WindowsFeedbackHub','Microsoft.WindowsMaps','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.ZuneMusic','Microsoft.ZuneVideo','Clipchamp.Clipchamp','Microsoft.YourPhone','MicrosoftTeams'
-    oobeSetUserRegSettings = $true
-    oobeSetDeviceRegSettings = $true
-    oobeRegisterAutopilot = $true
-    oobeCreateLocalUser = $true
-    oobeExecutionPolicyRestricted = $true
-    oobeRestartComputer = $true
-}
 
 function Step-oobeSetDisplay {
     [CmdletBinding()]
